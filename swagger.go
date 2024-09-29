@@ -17,6 +17,7 @@ import (
 
 type swaggerConfig struct {
 	URL                      string
+	DisplayOperationId       bool
 	DocExpansion             string
 	Title                    string
 	Oauth2RedirectURL        htmlTemplate.JS
@@ -24,12 +25,14 @@ type swaggerConfig struct {
 	DeepLinking              bool
 	PersistAuthorization     bool
 	Oauth2DefaultClientID    string
+	Filter                   string // 默认开启
 }
 
 // Config stores ginSwagger configuration variables.
 type Config struct {
 	// The url pointing to API definition (normally swagger.json or swagger.yaml). Default is `doc.json`.
 	URL                      string
+	DisplayOperationId       bool
 	DocExpansion             string
 	InstanceName             string
 	Title                    string
@@ -51,6 +54,7 @@ func (config Config) toSwaggerConfig() swaggerConfig {
 		Title:                 config.Title,
 		PersistAuthorization:  config.PersistAuthorization,
 		Oauth2DefaultClientID: config.Oauth2DefaultClientID,
+		DisplayOperationId:    config.DisplayOperationId,
 	}
 }
 
@@ -65,6 +69,14 @@ func URL(url string) func(*Config) {
 func DocExpansion(docExpansion string) func(*Config) {
 	return func(c *Config) {
 		c.DocExpansion = docExpansion
+	}
+}
+
+// Boolean=false. 控制操作 ID 在操作列表中的显示。默认值为 false。
+// DisplayOperationId set the displayOperationId configuration.
+func DisplayOperationId(displayOperationId bool) func(*Config) {
+	return func(c *Config) {
+		c.DisplayOperationId = displayOperationId
 	}
 }
 
@@ -123,7 +135,10 @@ func WrapHandler(handler *webdav.Handler, options ...func(*Config)) gin.HandlerF
 		c(&config)
 	}
 
-	return CustomWrapHandler(&config, handler)
+	return func(ctx *gin.Context) {
+		handler.ServeHTTP(ctx.Writer, ctx.Request)
+	}
+	// return CustomWrapHandler(&config, handler)
 }
 
 // CustomWrapHandler wraps `http.Handler` into `gin.HandlerFunc`.
@@ -267,7 +282,9 @@ window.onload = function() {
 	layout: "StandaloneLayout",
     docExpansion: "{{.DocExpansion}}",
 	deepLinking: {{.DeepLinking}},
-	defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}}
+	defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}},
+	displayOperationId: {{.DisplayOperationId}},
+	filter: "",
   })
 
   const defaultClientId = "{{.Oauth2DefaultClientID}}";
@@ -338,3 +355,6 @@ const swaggerIndexTpl = `<!-- HTML for static distribution bundle build -->
 
 </html>
 `
+
+// const swaggerIndexTpl2 = `<!-- HTML for static distribution bundle build -->
+// <!DOCTYPE html>

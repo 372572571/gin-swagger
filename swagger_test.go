@@ -10,9 +10,9 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/swaggo/swag"
 
+	swaggerFiles "github.com/372572571/files"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	swaggerFiles "github.com/swaggo/files"
 )
 
 type mockedSwag struct{}
