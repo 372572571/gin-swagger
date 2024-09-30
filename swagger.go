@@ -135,10 +135,7 @@ func WrapHandler(handler *webdav.Handler, options ...func(*Config)) gin.HandlerF
 		c(&config)
 	}
 
-	return func(ctx *gin.Context) {
-		handler.ServeHTTP(ctx.Writer, ctx.Request)
-	}
-	// return CustomWrapHandler(&config, handler)
+	return CustomWrapHandler(&config, handler)
 }
 
 // CustomWrapHandler wraps `http.Handler` into `gin.HandlerFunc`.
